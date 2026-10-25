@@ -1,0 +1,18 @@
+{
+  "title": "小红书观察室",
+  "keywords": ["信用卡", "美卡", "信用卡福利"],
+  "topics": {
+    "credit-cards": {"label": "信用卡与福利", "keywords": ["信用卡", "美卡", "信用卡福利"]},
+    "north-america-life": {"label": "北美生活热门", "keywords": ["北美生活", "美国生活", "加拿大生活"]}
+  },
+  "batch_size": 5,
+  "timezone": "America/Los_Angeles",
+  "excluded_author_ids": ["6211936c00000000100056ae"],
+  "excluded_author_names": ["北美撸卡MaxWorth"],
+  "google_cloud": {
+    "project_id": "",
+    "bucket": "",
+    "region": "us-central1",
+    "job": "xhs-observer-process"
+  }
+}

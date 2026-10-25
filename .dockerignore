@@ -1,0 +1,6 @@
+*
+!requirements.txt
+!core.py
+!cloud.py
+!config.example.json
+!Dockerfile
