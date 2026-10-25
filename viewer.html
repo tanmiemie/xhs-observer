@@ -20,8 +20,8 @@ header{padding-top:16px;padding-bottom:16px}.hero{margin:10px 0}h1{font-size:33p
 const db=JSON.parse(document.getElementById('archive').textContent), $=id=>document.getElementById(id);
 const escapeHtml=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const count=n=>Number(n).toLocaleString('en-US');const total=s=>s.likes+s.saves+s.comments;
-const batches=Object.values(db.batches).filter(b=>b.status==='complete').sort((a,b)=>(b.period_end||b.date).localeCompare(a.period_end||a.date)||b.completed_at.localeCompare(a.completed_at));
-let local={saved:[],notes:{}};try{local={...local,...JSON.parse(localStorage.getItem('xhs-observer-notes-v1')||'{}')}}catch(e){}
+const batches=Object.values(db.batches).filter(b=>b.status==='complete'||b.status==='incomplete').sort((a,b)=>(b.period_end||b.date).localeCompare(a.period_end||a.date)||b.completed_at.localeCompare(a.completed_at));
+let local={saved:[],notes:{}};try{local={...local,...JSON.parse(localStorage.getItem('xhs-observer-notes-v1')||localStorage.getItem('maxworth-xhs-notes-v1')||'{}')}}catch(e){}
 let openSnapshot=null;let toastTimeout;
 function toast(msg){$('toast').textContent=msg;$('toast').style.display='block';clearTimeout(toastTimeout);toastTimeout=setTimeout(()=>$('toast').style.display='none',2500)}
 function persist(){try{localStorage.setItem('xhs-observer-notes-v1',JSON.stringify(local));return true}catch(e){toast('此浏览器无法保存笔记，内容仍保留在当前页面。');return false}}
@@ -36,7 +36,7 @@ function render(){
  const sort=$('sort').value;if(sort!=='rank')items.sort((a,b)=>sort==='total'?total(b)-total(a):b[sort]-a[sort]);
  $('heading').textContent=$('batch').value==='latest'?('最近一期的 '+batch.snapshot_ids.length+' 条'):(batch.period_start+' 至 '+batch.period_end);
  const dateText=new Date(batch.completed_at).toLocaleString('zh-CN',{timeZone:'America/Los_Angeles',hour12:false});const stale=Date.now()-Date.parse(batch.completed_at)>36*3600000;
- $('status').textContent=`${db.demo?'公开摘要 demo。':'完整图文缓存。'}本次采集：${dateText}（洛杉矶时间）。${batch.mode==='weekly-backfill'?'按发布日期分周，互动量不是历史热榜。':''}${stale?' 暂无更新结果。':''}`;$('status').className='status'+(stale?' stale':'');
+ $('status').textContent=`${batch.status==='incomplete'?'样本补采中。':db.demo?'公开摘要 demo。':'完整图文缓存。'}本次采集：${dateText}（洛杉矶时间）。${batch.mode==='weekly-backfill'?'按发布日期分周，互动量不是历史热榜。':''}${stale?' 暂无更新结果。':''}`;$('status').className='status'+(stale?' stale':'');
  $('count').textContent=`显示 ${items.length} / ${batch.snapshot_ids.length} 篇 · ${batches.length} 个历史批次`;
  $('empty').hidden=items.length>0;$('cards').innerHTML=items.map(s=>{const p=s.content,c=p.media.find(m=>m.role==='cover')||{id:''},saved=local.saved.includes(p.id);return `<article class="card"><div class="visual"><button class="image-button" data-open="${escapeHtml(s.id)}" aria-label="查看${escapeHtml(p.title)}"><img class="cover" src="${imgSrc(c.id)}" alt="${escapeHtml(p.title)}封面"><span class="overlay">${p.type==='video'?'视频 · 仅发布文案':p.media.some(m=>m.role==='image')?mediaFor(p).length+' 张配图':'摘要 demo'}</span></button><button class="save ${saved?'active':''}" data-save="${p.id}" aria-label="${saved?'取消标记':'标记这篇'}" aria-pressed="${saved}">${saved?'★':'☆'}</button></div><div class="card-content"><span class="tag">${escapeHtml(p.category.split(' / ')[0])}</span><h2><button class="title-btn" data-open="${escapeHtml(s.id)}">${escapeHtml(p.title)}</button></h2><div class="author">${escapeHtml(p.author)} · ${escapeHtml(p.published_label)}</div><p class="summary">${escapeHtml(p.summary)}</p><div class="numbers">${stats(s)}</div><div class="footer-line"><button class="text-button" data-open="${escapeHtml(s.id)}">查看正文和图片</button><span class="muted">总互动 ${count(total(s))}</span></div></div></article>`}).join('');
 }
